@@ -127,16 +127,18 @@ function createButtons(activeSection = null) {
 // ------------------------------
 
 const button = new ButtonBuilder()
-  .setCustomId(`lampoon_${section.id}`)
-  .setLabel(section.label)
+  .setCustomId(`lampoon_${sectionId}`)
+  .setLabel(section.button.replace(/^.+?\s/, ""))
   .setStyle(ButtonStyle.Primary);
 
 // ------------------------------
 // SECTION EMOJI
 // ------------------------------
 
-if (section.emoji) {
-  button.setEmoji(section.emoji);
+const emojiMatch = section.button.match(/^(\S+)\s/);
+
+if (emojiMatch) {
+  button.setEmoji(emojiMatch[1]);
 }
 
 buttons.push(button);
