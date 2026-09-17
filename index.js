@@ -95,32 +95,26 @@ function createMainEmbed() {
     .setTimestamp();
 }
 
-// ==========================================
-// CREATE BUTTONS
-// ==========================================
+// ------------------------------
+// CREATE BUTTON
+// ------------------------------
 
-function createButtons(activeSection = null) {
-  const buttons = [];
+const button = new ButtonBuilder()
+  .setCustomId(`lampoon_${sectionId}`)
+  .setLabel(section.button.replace(/^.+?\s/, ""))
+  .setStyle(ButtonStyle.Primary);
 
-  for (
-    const [id, section]
-    of Object.entries(lampoon.sections || {})
-  ) {
+// ------------------------------
+// SECTION EMOJI
+// ------------------------------
 
-    // ------------------------------
-    // BUTTON LABEL
-    // ------------------------------
+const emojiMatch = section.button.match(/^(\S+)\s/);
 
-    let label =
-      section.button || id;
+if (emojiMatch) {
+  button.setEmoji(emojiMatch[1]);
+}
 
-    // Remove emoji from beginning
-    // if the emoji is already supplied
-    // separately with setEmoji().
-    label = label.replace(
-      /^.{1,2}\s/,
-      ""
-    );
+buttons.push(button);
 
 // ------------------------------
 // CREATE BUTTON
