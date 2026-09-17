@@ -128,15 +128,22 @@ function createButtons(activeSection = null) {
 
     const button =
       new ButtonBuilder()
-        .setCustomId(
-          `lampoon_${id}`
-        )
-        .setLabel(label)
-        .setStyle(
-          activeSection === id
-            ? ButtonStyle.Secondary
-            : ButtonStyle.Primary
-        );
+    .setCustomId("lampoon_partnership")
+    .setLabel("Partnership")
+    .setEmoji("🤝")
+    .setStyle(ButtonStyle.Primary),
+
+new ButtonBuilder()
+    .setCustomId("lampoon_collaboration")
+    .setLabel("Collaboration")
+    .setEmoji("🎬")
+    .setStyle(ButtonStyle.Primary),
+
+new ButtonBuilder()
+    .setCustomId("lampoon_sponsorship")
+    .setLabel("Sponsorship")
+    .setEmoji("💰")
+    .setStyle(ButtonStyle.Primary)
 
     // ------------------------------
     // SECTION EMOJI
