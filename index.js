@@ -1,5 +1,6 @@
 // ==========================================
 // LAMPOON EXPANDABLE DISCORD BOT
+// Discord.js v14
 // ==========================================
 
 const {
@@ -42,7 +43,7 @@ server.listen(PORT, "0.0.0.0", () => {
 });
 
 // ==========================================
-// LOAD LAMPOON CONFIG
+// LOAD LAMPOON.JSON
 // ==========================================
 
 const configPath = path.join(__dirname, "lampoon.json");
@@ -76,56 +77,98 @@ const client = new Client({
 
 function createMainEmbed() {
   return new EmbedBuilder()
-    .setColor(lampoon.colors?.main || "#D4AF37")
-    .setTitle(lampoon.title || "LAMPOON")
+    .setColor(
+      lampoon.colors?.main || "#D4AF37"
+    )
+    .setTitle(
+      lampoon.title || "LAMPOON"
+    )
     .setDescription(
       lampoon.description ||
       "Where HOK meets satire, creativity, and chaos."
     )
     .setFooter({
-      text: lampoon.subtitle || "LAMPOON"
+      text:
+        lampoon.subtitle ||
+        "LAMPOON"
     })
     .setTimestamp();
 }
 
 // ==========================================
-// BUTTONS
+// CREATE BUTTONS
 // ==========================================
 
 function createButtons(activeSection = null) {
   const buttons = [];
 
-  for (const [id, section] of Object.entries(lampoon.sections || {})) {
+  for (
+    const [id, section]
+    of Object.entries(lampoon.sections || {})
+  ) {
 
-    let label = section.button || id;
+    // ------------------------------
+    // BUTTON LABEL
+    // ------------------------------
 
-    // Remove emoji from the beginning of the label
-    label = label.replace(/^.{1,2}\s/, "");
+    let label =
+      section.button || id;
 
-    const button = new ButtonBuilder()
-      .setCustomId(`lampoon_${id}`)
-      .setLabel(label)
-      .setStyle(
-        activeSection === id
-          ? ButtonStyle.Secondary
-          : ButtonStyle.Primary
-      );
+    // Remove emoji from beginning
+    // if the emoji is already supplied
+    // separately with setEmoji().
+    label = label.replace(
+      /^.{1,2}\s/,
+      ""
+    );
 
-    // Try to use the section emoji if available
+    // ------------------------------
+    // CREATE BUTTON
+    // ------------------------------
+
+    const button =
+      new ButtonBuilder()
+        .setCustomId(
+          `lampoon_${id}`
+        )
+        .setLabel(label)
+        .setStyle(
+          activeSection === id
+            ? ButtonStyle.Secondary
+            : ButtonStyle.Primary
+        );
+
+    // ------------------------------
+    // SECTION EMOJI
+    // ------------------------------
+
     if (section.emoji) {
-      button.setEmoji(section.emoji);
+      button.setEmoji(
+        section.emoji
+      );
     }
 
     buttons.push(button);
   }
 
+  // ==================================
+  // DISCORD MAXIMUM:
+  // 5 BUTTONS PER ROW
+  // ==================================
+
   const rows = [];
 
-  for (let i = 0; i < buttons.length; i += 5) {
+  for (
+    let i = 0;
+    i < buttons.length;
+    i += 5
+  ) {
+
     rows.push(
-      new ActionRowBuilder().addComponents(
-        buttons.slice(i, i + 5)
-      )
+      new ActionRowBuilder()
+        .addComponents(
+          buttons.slice(i, i + 5)
+        )
     );
   }
 
@@ -137,238 +180,388 @@ function createButtons(activeSection = null) {
 // ==========================================
 
 client.once("ready", async () => {
-  console.log("==========================================");
-  console.log(`🤖 Logged in as ${client.user.tag}`);
-  console.log(`🆔 Bot ID: ${client.user.id}`);
-  console.log("==========================================");
+
+  console.log(
+    "=========================================="
+  );
+
+  console.log(
+    `🤖 Logged in as ${client.user.tag}`
+  );
+
+  console.log(
+    `🆔 Bot ID: ${client.user.id}`
+  );
+
+  console.log(
+    "=========================================="
+  );
 
   try {
 
     // ======================================
-    // YOUR LAMPOON CHANNEL
+    // LAMPOON CHANNEL
     // ======================================
 
-    const channelId = "1539651469819641857";
+    const channelId =
+      "1539651469819641857";
 
-    const channel = await client.channels.fetch(channelId);
+    const channel =
+      await client.channels.fetch(
+        channelId
+      );
 
     if (!channel) {
-      console.error("❌ LAMPOON channel not found.");
+
+      console.error(
+        "❌ LAMPOON channel not found."
+      );
+
       return;
     }
 
     if (!channel.isTextBased()) {
-      console.error("❌ LAMPOON channel is not a text channel.");
+
+      console.error(
+        "❌ LAMPOON channel is not a text channel."
+      );
+
       return;
     }
 
-    console.log(`📢 Posting LAMPOON panel in #${channel.name}`);
+    console.log(
+      `📢 Posting LAMPOON panel in #${channel.name}`
+    );
+
+    // ======================================
+    // POST PANEL
+    // ======================================
 
     await channel.send({
       embeds: [
         createMainEmbed()
       ],
-      components: createButtons()
+      components:
+        createButtons()
     });
 
-    console.log("✅ LAMPOON panel posted successfully.");
+    console.log(
+      "✅ LAMPOON panel posted successfully."
+    );
 
   } catch (error) {
+
     console.error(
       "❌ Failed to post LAMPOON panel:",
       error
     );
+
   }
+
 });
 
 // ==========================================
 // BUTTON INTERACTIONS
 // ==========================================
 
-client.on("interactionCreate", async interaction => {
-
-  // Ignore anything that isn't a button
-  if (!interaction.isButton()) {
-    return;
-  }
-
-  // Only handle LAMPOON buttons
-  if (!interaction.customId.startsWith("lampoon_")) {
-    return;
-  }
-
-  try {
+client.on(
+  "interactionCreate",
+  async interaction => {
 
     // ======================================
-    // GET SECTION ID
+    // ONLY HANDLE BUTTONS
     // ======================================
 
-    const sectionId = interaction.customId.replace(
-      "lampoon_",
-      ""
-    );
-
-    const section = lampoon.sections?.[sectionId];
-
-    // ======================================
-    // SECTION NOT FOUND
-    // ======================================
-
-    if (!section) {
-
-      if (!interaction.replied && !interaction.deferred) {
-        await interaction.reply({
-          content: "❌ Information section not found.",
-          ephemeral: true
-        });
-      }
-
+    if (!interaction.isButton()) {
       return;
     }
 
     // ======================================
-    // ACKNOWLEDGE DISCORD IMMEDIATELY
-    // ======================================
-    // This prevents:
-    // "The application didn't respond in time."
-
-    await interaction.deferUpdate();
-
-    // ======================================
-    // CHECK CURRENT EMBEDS
+    // ONLY HANDLE LAMPOON BUTTONS
     // ======================================
 
-    const currentEmbeds = interaction.message.embeds;
-
-    const alreadyOpen =
-      currentEmbeds.length > 1 &&
-      currentEmbeds[1].title === section.title;
-
-    // ======================================
-    // COLLAPSE
-    // ======================================
-
-    if (alreadyOpen) {
-
-      await interaction.message.edit({
-        embeds: [
-          createMainEmbed()
-        ],
-        components: createButtons()
-      });
-
-      console.log(
-        `🔽 Collapsed section: ${sectionId}`
-      );
-
-      return;
-    }
-
-    // ======================================
-    // EXPANDED EMBED COLOR
-    // ======================================
-
-    const detailColor =
-      lampoon.colors?.[sectionId] ||
-      lampoon.colors?.expanded ||
-      "#C0C0C0";
-
-    // ======================================
-    // CREATE DETAIL EMBED
-    // ======================================
-
-    const detailEmbed = new EmbedBuilder()
-      .setColor(detailColor)
-      .setTitle(section.title || "LAMPOON")
-      .setDescription(
-        `**${section.scenario || ""}**\n\n` +
-        `${section.content || ""}`
+    if (
+      !interaction.customId.startsWith(
+        "lampoon_"
       )
-      .setFooter({
-        text:
-          "LAMPOON • Click the same button to collapse"
-      })
-      .setTimestamp();
+    ) {
 
-    // ======================================
-    // UPDATE MESSAGE
-    // ======================================
-
-    await interaction.message.edit({
-      embeds: [
-        createMainEmbed(),
-        detailEmbed
-      ],
-      components: createButtons(sectionId)
-    });
+      return;
+    }
 
     console.log(
-      `🔼 Opened section: ${sectionId}`
+      `🔘 Button clicked: ${interaction.customId}`
     );
-
-  } catch (error) {
-
-    console.error(
-      "❌ Button interaction error:",
-      error
-    );
-
-    // ======================================
-    // TRY TO RESPOND IF POSSIBLE
-    // ======================================
 
     try {
 
-      if (!interaction.replied && !interaction.deferred) {
+      // ====================================
+      // ACKNOWLEDGE IMMEDIATELY
+      // ====================================
+      // This is intentionally BEFORE
+      // reading the JSON section.
+      //
+      // It prevents:
+      // "The application didn't respond
+      // in time."
+      // ====================================
 
-        await interaction.reply({
-          content:
-            "❌ Something went wrong while opening this section.",
-          ephemeral: true
+      await interaction.deferUpdate();
+
+      // ====================================
+      // GET SECTION ID
+      // ====================================
+
+      const sectionId =
+        interaction.customId.replace(
+          "lampoon_",
+          ""
+        );
+
+      console.log(
+        `📂 Section requested: ${sectionId}`
+      );
+
+      // ====================================
+      // GET SECTION FROM JSON
+      // ====================================
+
+      const section =
+        lampoon.sections?.[sectionId];
+
+      // ====================================
+      // SECTION DOES NOT EXIST
+      // ====================================
+
+      if (!section) {
+
+        console.error(
+          `❌ Section not found in lampoon.json: ${sectionId}`
+        );
+
+        // Since deferUpdate() has already
+        // acknowledged the interaction,
+        // we cannot use interaction.reply().
+        //
+        // Instead, edit the original message.
+
+        await interaction.message.edit({
+          embeds: [
+            createMainEmbed()
+          ],
+          components:
+            createButtons()
         });
+
+        return;
+      }
+
+      // ====================================
+      // CURRENT EMBEDS
+      // ====================================
+
+      const currentEmbeds =
+        interaction.message.embeds;
+
+      // ====================================
+      // CHECK IF SAME SECTION IS ALREADY OPEN
+      // ====================================
+
+      const alreadyOpen =
+        currentEmbeds.length > 1 &&
+        currentEmbeds[1].title ===
+          section.title;
+
+      // ====================================
+      // COLLAPSE SECTION
+      // ====================================
+
+      if (alreadyOpen) {
+
+        await interaction.message.edit({
+          embeds: [
+            createMainEmbed()
+          ],
+          components:
+            createButtons()
+        });
+
+        console.log(
+          `🔽 Collapsed section: ${sectionId}`
+        );
+
+        return;
+      }
+
+      // ====================================
+      // DETAIL EMBED COLOR
+      // ====================================
+
+      const detailColor =
+        lampoon.colors?.[sectionId] ||
+        lampoon.colors?.expanded ||
+        "#C0C0C0";
+
+      // ====================================
+      // CREATE DETAIL EMBED
+      // ====================================
+
+      const detailEmbed =
+        new EmbedBuilder()
+          .setColor(
+            detailColor
+          )
+          .setTitle(
+            section.title ||
+            "LAMPOON"
+          )
+          .setDescription(
+
+            `**${
+              section.scenario || ""
+            }**\n\n` +
+
+            `${
+              section.content || ""
+            }`
+
+          )
+          .setFooter({
+            text:
+              "LAMPOON • Click the same button to collapse"
+          })
+          .setTimestamp();
+
+      // ====================================
+      // UPDATE ORIGINAL MESSAGE
+      // ====================================
+
+      await interaction.message.edit({
+
+        embeds: [
+          createMainEmbed(),
+          detailEmbed
+        ],
+
+        components:
+          createButtons(
+            sectionId
+          )
+
+      });
+
+      // ====================================
+      // SUCCESS LOG
+      // ====================================
+
+      console.log(
+        `🔼 Opened section: ${sectionId}`
+      );
+
+    } catch (error) {
+
+      console.error(
+        "❌ Button interaction error:",
+        error
+      );
+
+      // ====================================
+      // ERROR RESPONSE
+      // ====================================
+      //
+      // If deferUpdate() succeeded, the
+      // interaction is already acknowledged.
+      //
+      // Therefore use followUp() instead
+      // of reply().
+      // ====================================
+
+      try {
+
+        if (
+          interaction.deferred ||
+          interaction.replied
+        ) {
+
+          await interaction.followUp({
+            content:
+              "❌ Something went wrong while opening this section.",
+            ephemeral: true
+          });
+
+        } else {
+
+          await interaction.reply({
+            content:
+              "❌ Something went wrong while opening this section.",
+            ephemeral: true
+          });
+
+        }
+
+      } catch (replyError) {
+
+        console.error(
+          "❌ Could not send error response:",
+          replyError
+        );
 
       }
 
-    } catch (replyError) {
-
-      console.error(
-        "❌ Could not send error response:",
-        replyError
-      );
-
     }
+
   }
-});
+);
 
 // ==========================================
 // DISCORD ERROR HANDLING
 // ==========================================
 
-client.on("error", error => {
-  console.error("❌ Discord client error:", error);
-});
+client.on(
+  "error",
+  error => {
 
-process.on("unhandledRejection", error => {
-  console.error(
-    "❌ Unhandled promise rejection:",
-    error
-  );
-});
+    console.error(
+      "❌ Discord client error:",
+      error
+    );
 
-process.on("uncaughtException", error => {
-  console.error(
-    "❌ Uncaught exception:",
-    error
-  );
-});
+  }
+);
+
+process.on(
+  "unhandledRejection",
+  error => {
+
+    console.error(
+      "❌ Unhandled promise rejection:",
+      error
+    );
+
+  }
+);
+
+process.on(
+  "uncaughtException",
+  error => {
+
+    console.error(
+      "❌ Uncaught exception:",
+      error
+    );
+
+  }
+);
 
 // ==========================================
 // DISCORD LOGIN
 // ==========================================
 
-const TOKEN = process.env.DISCORD_TOKEN;
+const TOKEN =
+  process.env.DISCORD_TOKEN;
 
 if (!TOKEN) {
+
   console.error(
     "❌ DISCORD_TOKEN environment variable is missing."
   );
@@ -376,11 +569,21 @@ if (!TOKEN) {
   process.exit(1);
 }
 
-client.login(TOKEN).catch(error => {
-  console.error(
-    "❌ Discord login failed:",
-    error
-  );
+client.login(TOKEN)
+  .then(() => {
 
-  process.exit(1);
-});
+    console.log(
+      "🔐 Discord login successful."
+    );
+
+  })
+  .catch(error => {
+
+    console.error(
+      "❌ Discord login failed:",
+      error
+    );
+
+    process.exit(1);
+
+  });
