@@ -122,42 +122,25 @@ function createButtons(activeSection = null) {
       ""
     );
 
-    // ------------------------------
-    // CREATE BUTTON
-    // ------------------------------
+// ------------------------------
+// CREATE BUTTON
+// ------------------------------
 
-    const button =
-      new ButtonBuilder()
-    .setCustomId("lampoon_partnership")
-    .setLabel("Partnership")
-    .setEmoji("🤝")
-    .setStyle(ButtonStyle.Primary),
+const button = new ButtonBuilder()
+  .setCustomId(`lampoon_${section.id}`)
+  .setLabel(section.label)
+  .setStyle(ButtonStyle.Primary);
 
-new ButtonBuilder()
-    .setCustomId("lampoon_collaboration")
-    .setLabel("Collaboration")
-    .setEmoji("🎬")
-    .setStyle(ButtonStyle.Primary),
+// ------------------------------
+// SECTION EMOJI
+// ------------------------------
 
-new ButtonBuilder()
-    .setCustomId("lampoon_sponsorship")
-    .setLabel("Sponsorship")
-    .setEmoji("💰")
-    .setStyle(ButtonStyle.Primary)
+if (section.emoji) {
+  button.setEmoji(section.emoji);
+}
 
-    // ------------------------------
-    // SECTION EMOJI
-    // ------------------------------
-
-    if (section.emoji) {
-      button.setEmoji(
-        section.emoji
-      );
-    }
-
-    buttons.push(button);
-  }
-
+buttons.push(button);
+    
   // ==================================
   // DISCORD MAXIMUM:
   // 5 BUTTONS PER ROW
