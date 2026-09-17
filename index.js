@@ -115,27 +115,6 @@ if (emojiMatch) {
 }
 
 buttons.push(button);
-
-// ------------------------------
-// CREATE BUTTON
-// ------------------------------
-
-const button = new ButtonBuilder()
-  .setCustomId(`lampoon_${sectionId}`)
-  .setLabel(section.button.replace(/^.+?\s/, ""))
-  .setStyle(ButtonStyle.Primary);
-
-// ------------------------------
-// SECTION EMOJI
-// ------------------------------
-
-const emojiMatch = section.button.match(/^(\S+)\s/);
-
-if (emojiMatch) {
-  button.setEmoji(emojiMatch[1]);
-}
-
-buttons.push(button);
     
   // ==================================
   // DISCORD MAXIMUM:
